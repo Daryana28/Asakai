@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 /* =======================
-   ProjectArcSemi (gauge)
+   ProjectArcSemi (tetap)
 ======================= */
 function ProjectArcSemi({
   value,
@@ -26,12 +26,13 @@ function ProjectArcSemi({
   const pad = thickness + 8;
   const viewW = size + pad * 2;
   const viewH = size * 0.72 + pad * 2;
+
   const cx = pad + size / 2;
   const cy = pad + size / 2 + 28;
   const r = size / 2 - 10;
 
+  const EPS = 0.0001;
   const arcOf = (pctStart: number, pctLen: number) => {
-    const EPS = 0.0001;
     const startA = Math.PI + (pctStart / 100) * Math.PI + EPS;
     const endA = Math.PI + ((pctStart + pctLen) / 100) * Math.PI - EPS;
     const x1 = cx + r * Math.cos(startA);
@@ -50,6 +51,7 @@ function ProjectArcSemi({
         width={viewW}
         height={viewH}
         viewBox={`0 0 ${viewW} ${viewH}`}
+        style={{ overflow: "visible" }}
         aria-label="project-arc"
       >
         <defs>
@@ -65,7 +67,6 @@ function ProjectArcSemi({
           </pattern>
         </defs>
 
-        {/* background */}
         <path
           d={arcOf(0, 100)}
           stroke="#e5edf0"
@@ -73,7 +74,6 @@ function ProjectArcSemi({
           fill="none"
           strokeLinecap="round"
         />
-        {/* done */}
         {done > 0 && (
           <path
             d={arcOf(0, done)}
@@ -83,7 +83,6 @@ function ProjectArcSemi({
             strokeLinecap="round"
           />
         )}
-        {/* progress */}
         {progress > 0 && (
           <path
             d={arcOf(done, progress)}
@@ -93,7 +92,6 @@ function ProjectArcSemi({
             strokeLinecap="round"
           />
         )}
-        {/* pending */}
         {pending > 0 && (
           <path
             d={arcOf(done + progress, pending)}
@@ -119,14 +117,14 @@ function ProjectArcSemi({
           <span
             className="h-3 w-3 rounded-full"
             style={{ backgroundColor: colorDone }}
-          />
+          />{" "}
           Completed
         </span>
         <span className="inline-flex items-center gap-2">
           <span
             className="h-3 w-3 rounded-full"
             style={{ backgroundColor: colorProgress }}
-          />
+          />{" "}
           In Progress
         </span>
         <span className="inline-flex items-center gap-2">
@@ -174,17 +172,13 @@ const INITIAL_DATA: Record<SectionKey, SectionData> = {
   },
 };
 
-/* =======================
-   Docs Hook
-======================= */
 type DocCard = {
   id: string;
   name: string;
   uploadedAt: string;
   type?: string;
   dept?: string;
-  cover?: string;
-  coverPath?: string;
+  hasCover?: boolean;
 };
 const ext = (n: string) => (n.split(".").pop() || "").toLowerCase();
 const guessType = (n: string) =>
@@ -196,6 +190,9 @@ const guessType = (n: string) =>
     ? "word"
     : "file";
 
+/* =======================
+   Hooks dokumen + helpers
+======================= */
 function useAsakaiDocs() {
   const [files, setFiles] = useState<DocCard[]>([]);
   const [loading, setLoading] = useState(false);
@@ -206,8 +203,15 @@ function useAsakaiDocs() {
       const r = await fetch("/api/asakai-files", { cache: "no-store" });
       const arr = await r.json();
       setFiles(
-        arr.map((x: any) => ({ ...x, type: x.type || guessType(x.name) }))
+        arr.map((x: any) => ({
+          ...x,
+          type: x.type || guessType(x.name),
+          // tangkap dua-duanya: "cover" atau "coverPath"
+          hasCover: Boolean(x.cover || x.coverPath),
+        }))
       );
+    } catch {
+      /* noop */
     } finally {
       setLoading(false);
     }
@@ -218,19 +222,28 @@ function useAsakaiDocs() {
   }, []);
 
   const remove = async (id: string) => {
-    if (!confirm("Hapus file ini?")) return;
+    const ok = confirm("Hapus file ini? Tindakan tidak bisa dibatalkan.");
+    if (!ok) return false;
     const res = await fetch(`/api/asakai-files?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     const j = await res.json();
-    if (j?.ok) setFiles((p) => p.filter((f) => f.id !== id));
-    else alert(j?.error || "Gagal menghapus.");
+    if (j?.ok) {
+      setFiles((prev) => prev.filter((f) => f.id !== id));
+      return true;
+    }
+    alert(j?.error || "Gagal menghapus.");
+    return false;
   };
 
   const open = (f: DocCard) => {
-    if (f.type === "pdf")
+    // PDF dibuka inline (viewer browser)
+    if (f.type === "pdf") {
       window.open(`/api/asakai-files/${f.id}/download?inline=1`, "_blank");
-    else window.location.href = `/api/asakai-files/${f.id}/download`;
+      return;
+    }
+    // lainnya → download (OS yang akan buka app default)
+    window.location.href = `/api/asakai-files/${f.id}/download`;
   };
 
   return { files, loading, refresh, remove, open };
@@ -244,6 +257,7 @@ export default function Home() {
     useState<Record<SectionKey, SectionData>>(INITIAL_DATA);
   const docs = useAsakaiDocs();
 
+  // realtime dummy 2s
   useEffect(() => {
     const id = setInterval(() => {
       setData((prev) => {
@@ -278,26 +292,30 @@ export default function Home() {
         {CARDS.map((c) => (
           <div
             key={c.key}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center"
+            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-center items-center text-center"
           >
             <h2 className="text-2xl font-semibold mb-4">{c.key}</h2>
-            <ProjectArcSemi value={c.efficiency} size={220} thickness={45} />
+            <div className="flex justify-center items-center w-full">
+              <ProjectArcSemi value={c.efficiency} size={220} thickness={45} />
+            </div>
             <div className="w-full my-4 border-t border-slate-200" />
             <div className="text-sm space-y-3 mb-2 text-slate-700 w-full">
               <div>
-                <b>Production Target</b>
+                <div className="font-semibold text-slate-900">
+                  Production Target
+                </div>
                 <div>{c.target}</div>
               </div>
               <div>
-                <b>Result</b>
+                <div className="font-semibold text-slate-900">Result</div>
                 <div>{c.result}</div>
               </div>
               <div>
-                <b>Gap</b>
+                <div className="font-semibold text-slate-900">Gap</div>
                 <div>{c.gap}</div>
               </div>
               <div>
-                <b>Line Stop</b>
+                <div className="font-semibold text-slate-900">Line Stop</div>
                 <div>{c.lineStop}</div>
               </div>
             </div>
@@ -322,27 +340,42 @@ export default function Home() {
               <div
                 key={f.id}
                 className="bg-white rounded-xl border border-slate-200 hover:shadow-md transition overflow-hidden flex flex-col"
+                title={f.name}
               >
-                {/* Cover */}
+                {/* cover */}
                 <div className="w-full h-48 bg-slate-100 relative group">
-                  <img
-                    src={`/api/asakai-files/${f.id}/cover`}
-                    alt={`cover-${f.name}`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const img = e.currentTarget;
-                      img.style.display = "none";
-                      img.insertAdjacentHTML(
-                        "afterend",
-                        `<div class='w-full h-full flex items-center justify-center text-slate-400'>
-                          <svg class='w-16 h-16' viewBox='0 0 24 24' fill='none' stroke='currentColor'>
-                            <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2'
-                              d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'/>
-                          </svg>
-                        </div>`
-                      );
-                    }}
-                  />
+                  {f.hasCover ? (
+                    <img
+                      src={`/api/asakai-files/${f.id}/cover`}
+                      alt={`cover-${f.name}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error("Failed to load cover:", f.id);
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // prevent infinite loop
+                        target.style.display = "none";
+                        target.parentElement?.classList.add(
+                          "placeholder-shown"
+                        );
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      <svg
+                        className="w-16 h-16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                     <div className="w-full text-white">
                       <div className="text-sm font-medium truncate">
@@ -355,12 +388,14 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Info + Actions */}
+                {/* content */}
                 <div className="p-4 flex-1">
                   <div className="flex items-center gap-2 text-xs text-emerald-600 font-medium">
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                    {f.dept || f.type || "file"}
+                    {(f as any).dept || f.type || "file"}
                   </div>
+
+                  {/* actions */}
                   <div className="mt-3 flex items-center gap-2">
                     <button
                       onClick={() => docs.open(f)}

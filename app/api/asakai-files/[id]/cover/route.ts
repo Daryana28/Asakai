@@ -1,97 +1,87 @@
 import { NextResponse } from "next/server";
 import fs from "node:fs";
-import fsp from "node:fs/promises";
 import path from "node:path";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const DATA_DIR = path.join(process.cwd(), ".data");
-const DB_FILE = path.join(DATA_DIR, "asakai-files.json");
-const COVERS_DIR = path.join(DATA_DIR, "covers");
-const UPLOADS_DIR = path.join(process.cwd(), ".uploads");
+const DB_FILE = path.join(process.cwd(), ".data/asakai-files.json");
+const UPLOAD_DIR = path.join(process.cwd(), ".uploads");
+const COVER_DIR = path.join(process.cwd(), ".data", "covers"); // jika kamu pakai folder ini juga
 
-function guessMime(p: string) {
-  const ext = (p.split(".").pop() || "").toLowerCase();
-  if (ext === "png") return "image/png";
-  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
-  if (ext === "webp") return "image/webp";
-  return "application/octet-stream";
-}
-
-async function findExisting(paths: string[]) {
-  for (const p of paths) {
-    if (p && fs.existsSync(p)) return p;
-  }
-  return null;
-}
-
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: Request, ctx: any) {
   try {
+    const params = await ctx.params;
     const { id } = params || {};
-    if (!id) {
+    if (!id)
       return NextResponse.json({ error: "ID required" }, { status: 400 });
+
+    // baca DB (kalau ada field cover/coverPath)
+    let coverFromDb: string | undefined;
+    try {
+      if (fs.existsSync(DB_FILE)) {
+        const db = JSON.parse(
+          fs.readFileSync(DB_FILE, "utf8") || '{"files":[]}'
+        );
+        const rec = (db.files || []).find((x: any) => x.id === id);
+        if (rec) coverFromDb = rec.cover || rec.coverPath;
+      }
+    } catch {
+      // ignore DB errors
     }
 
-    if (!fs.existsSync(DB_FILE)) {
-      return NextResponse.json({ error: "DB not found" }, { status: 500 });
-    }
-
-    const db = JSON.parse(
-      (await fsp.readFile(DB_FILE, "utf8")) || `{"files":[]}`
-    );
-    const item = db?.files?.find((x: any) => x.id === id);
-    if (!item) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
-    }
-
-    // Prefer stored property first
-    const stored = (item.coverPath || item.cover || "") as string;
-
-    // Candidate names (by id and by stored name) & extensions
-    const names: string[] = [];
-    if (stored) {
-      // If it's a full path, take filename; else it’s already a name
-      names.push(path.basename(stored));
-    }
-    // try common naming conventions
-    names.push(
-      `${id}_cover.png`,
-      `${id}_cover.jpg`,
-      `${id}_cover.jpeg`,
-      `${id}_cover.webp`
-    );
-    names.push(`${id}.png`, `${id}.jpg`, `${id}.jpeg`, `${id}.webp`);
-
-    // Search in both likely folders + accept absolute stored path
+    // kandidat path cover yang mungkin
     const candidates: string[] = [];
-    for (const n of names) {
-      candidates.push(path.join(COVERS_DIR, n));
-      candidates.push(path.join(UPLOADS_DIR, n));
-    }
-    if (stored && path.isAbsolute(stored)) candidates.push(stored);
 
-    const found = await findExisting(candidates);
+    // 1) Pola default saat upload: .uploads/<id>_cover.(png|jpg|jpeg|webp)
+    ["png", "jpg", "jpeg", "webp"].forEach((ext) =>
+      candidates.push(path.join(UPLOAD_DIR, `${id}_cover.${ext}`))
+    );
+
+    // 2) Jika DB menyimpan nama file cover (relatif)
+    if (coverFromDb) {
+      // kalau absolute path di DB (lebih aman cek dulu)
+      if (path.isAbsolute(coverFromDb) && fs.existsSync(coverFromDb)) {
+        candidates.unshift(coverFromDb);
+      } else {
+        // coba di .uploads dan .data/covers
+        candidates.push(path.join(UPLOAD_DIR, coverFromDb));
+        candidates.push(path.join(COVER_DIR, coverFromDb));
+      }
+    }
+
+    // pilih path yang benar-benar ada
+    let found: string | null = null;
+    for (const p of candidates) {
+      if (p && fs.existsSync(p)) {
+        found = p;
+        break;
+      }
+    }
+
     if (!found) {
-      return NextResponse.json(
-        { error: "Cover not found", tried: candidates },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Cover not found" }, { status: 404 });
     }
 
-    const buf = await fsp.readFile(found);
+    const buf = fs.readFileSync(found);
+    // deteksi content-type sesuai ekstensi
+    const ext = path.extname(found).toLowerCase();
+    const ct =
+      ext === ".jpg" || ext === ".jpeg"
+        ? "image/jpeg"
+        : ext === ".webp"
+        ? "image/webp"
+        : "image/png";
+
     return new Response(buf, {
       headers: {
-        "Content-Type": guessMime(found),
+        "Content-Type": ct,
         "Content-Length": String(buf.length),
         "Cache-Control": "public, max-age=3600",
       },
     });
-  } catch (err) {
-    console.error("cover/GET error:", err);
+  } catch (e) {
+    console.error("cover route error:", e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
