@@ -1,0 +1,31 @@
+{
+  "files": [
+    {
+      "id": "1762297860289_0le5qg",
+      "name": "Test.pdf",
+      "dept": "ASSY",
+      "uploadedAt": "2025-11-04T23:11:00.292Z",
+      "type": "pdf",
+      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762297860289_0le5qg.pdf",
+      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762297860289_0le5qg_cover.png"
+    },
+    {
+      "id": "1762296797579_zgudlb",
+      "name": "Test.pdf",
+      "dept": "INJ",
+      "uploadedAt": "2025-11-04T22:53:17.581Z",
+      "type": "pdf",
+      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762296797579_zgudlb.pdf",
+      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762296797579_zgudlb_cover.png"
+    },
+    {
+      "id": "1762295877846_kq1czm",
+      "name": "Test.pdf",
+      "dept": "ASSY",
+      "uploadedAt": "2025-11-04T22:37:57.850Z",
+      "type": "pdf",
+      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762295877846_kq1czm.pdf",
+      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762295877846_kq1czm_cover.png"
+    }
+  ]
+}
