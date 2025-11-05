@@ -19,7 +19,7 @@ type AsakaiDoc = {
   type: "excel" | "pdf" | "word" | "image" | "file";
   filePath: string;
   coverPath?: string;
-  rows?: any[];            // hanya untuk excel (preview cepat)
+  rows?: any[];           
 };
 
 function ensure() {
@@ -51,7 +51,7 @@ function guessType(name: string): AsakaiDoc["type"] {
 
 export async function POST(req: Request) {
   try {
-    // make sure .data and .uploads exist before writing files
+    
     ensure();
     const form = await req.formData();
     const dept = String(form.get("dept") || "");
@@ -66,13 +66,11 @@ export async function POST(req: Request) {
     const mainExt = extOf(mainName);
     const mainType = guessType(mainName);
 
-    // simpan main file
     const mainBuf = Buffer.from(await mainFile.arrayBuffer());
     const mainFileName = `${id}.${mainExt || "bin"}`;
     const mainPath = path.join(UP_DIR, mainFileName);
     fs.writeFileSync(mainPath, mainBuf);
 
-    // simpan cover (opsional)
     let coverPath: string | undefined;
     if (coverFile) {
       const coverName = (coverFile as any).name || "cover";
@@ -93,7 +91,6 @@ export async function POST(req: Request) {
       coverPath,
     };
 
-    // jika excel → parse sheet pertama untuk preview cepat (max 200 baris)
     if (mainType === "excel") {
       const wb = XLSX.read(mainBuf);
       const ws = wb.Sheets[wb.SheetNames[0]];
@@ -107,7 +104,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, id }, { status: 201 });
   } catch (e: any) {
-    // log actual error to server console for debugging
     console.error("/api/asakai-upload error:", e);
     const msg = e && e.message ? String(e.message) : "upload failed";
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });

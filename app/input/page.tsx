@@ -2,25 +2,22 @@
 import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 
-/* =========================
-   Palet agar konsisten dengan Shell light
-========================= */
 const GREEN = {
   base: "#0E7B4A",
   soft: "#E9F4EE",
   ring: "#B9D7C8",
   sage: "#6C8B7B",
-  text: "#0F172A", // slate-900
+  text: "#0F172A",
   border: "#E5ECE8",
   card: "#FFFFFF",
   dim: "#6B7280",
 };
 
-type Dept = "ASSY" | "ST" | "INJ" | "PPC" | "LOGISTIC";
+type Dept = "Assembly" | "Surface Treatment" | "Injection" | "PPC" | "LOGISTIC";
 const DEPTS: { value: Dept; label: string }[] = [
-  { value: "ASSY", label: "Assembly (ASSY)" },
-  { value: "ST", label: "Surface Treatment (ST)" },
-  { value: "INJ", label: "Injection (INJ)" },
+  { value: "Assembly", label: "Assembly" },
+  { value: "Surface Treatment", label: "Surface Treatment" },
+  { value: "Injection", label: "Injection" },
   { value: "PPC", label: "PPC" },
   { value: "LOGISTIC", label: "Logistic" },
 ];
@@ -53,7 +50,6 @@ export default function InputAsakai() {
     setRows([]);
     setMsg("");
 
-    // preview jika gambar
     if (/\.(png|jpe?g|webp)$/i.test(f.name)) {
       const url = URL.createObjectURL(f);
       setImgPreview(url);
@@ -61,7 +57,6 @@ export default function InputAsakai() {
       setImgPreview(null);
     }
 
-    // baca excel utk preview cepat
     if (/\.(xlsx|xls)$/i.test(f.name)) {
       try {
         const buf = await f.arrayBuffer();
@@ -94,7 +89,7 @@ export default function InputAsakai() {
       });
       const j = await res.json();
       if (j.ok) {
-        setMsg("✅ Berhasil upload. Card akan muncul di dashboard.");
+        setMsg("✅ Berhasil upload.");
         setDept("");
         setFile(null);
         setCover(null);
@@ -179,7 +174,42 @@ export default function InputAsakai() {
               className="hidden"
               onChange={(e) => e.target.files && pickMain(e.target.files[0])}
             />
-            <span className="text-lg">📄</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                stroke="#0E7B4A"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M14 2v6h6"
+                stroke="#0E7B4A"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 13h6"
+                stroke="#0E7B4A"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9 17h6"
+                stroke="#0E7B4A"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             <span className="font-medium">Upload File</span>
           </label>
 
@@ -198,7 +228,33 @@ export default function InputAsakai() {
               className="hidden"
               onChange={(e) => e.target.files && setCover(e.target.files[0])}
             />
-            <span className="text-lg">🖼️</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="7"
+                width="18"
+                height="13"
+                rx="2"
+                stroke="#0E7B4A"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M3 13l4-4 5 5 3-3 4 4"
+                stroke="#0E7B4A"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="8.5" cy="10.5" r="1" fill="#0E7B4A" />
+            </svg>
             <span className="font-medium">Tambahkan Foto</span>
           </label>
 
@@ -208,11 +264,10 @@ export default function InputAsakai() {
             className="px-5 py-2.5 rounded-xl font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed transition active:scale-[0.99]"
             style={{ background: GREEN.base }}
           >
-            {busy ? "Mengunggah…" : "Kirim Laporan"}
+            {busy ? "Mengunggah…" : "Kirim"}
           </button>
         </div>
 
-        {/* Info strip */}
         {file ? (
           <div
             className="rounded-xl px-4 py-2 text-sm flex flex-wrap items-center gap-2"
@@ -236,10 +291,8 @@ export default function InputAsakai() {
           </div>
         ) : null}
 
-        {/* Preview SECTION */}
         {(imgPreview || isExcel) && (
           <div className="grid grid-cols-1 gap-5">
-            {/* Gambar */}
             {imgPreview && (
               <div
                 className="rounded-xl overflow-hidden"
@@ -255,7 +308,6 @@ export default function InputAsakai() {
               </div>
             )}
 
-            {/* Excel ringkasan */}
             {isExcel && (
               <div
                 className="rounded-2xl p-4 sm:p-5 space-y-4"
@@ -325,7 +377,7 @@ export default function InputAsakai() {
         )}
       </div>
 
-      {/* Tip kecil */}
+      {/* Tips */}
       <div
         className="text-xs rounded-xl px-3 py-2 w-fit"
         style={{ background: "#F3F7F5", color: GREEN.sage, ...ringStyle }}

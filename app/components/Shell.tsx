@@ -23,7 +23,6 @@ const MENU = [
     badge: "",
   },
   { href: "/kpi", label: "KPI Delivey", icon: "chart" as const, badge: "" },
-  // { href: "/master data", label: "Master Data", icon: "team" as const, badge: "" },
 ];
 
 const GENERAL = [
@@ -164,14 +163,11 @@ function Icon({ name, active = false }: { name: string; active?: boolean }) {
   }
 }
 
-/** ---------------------------
- *  Shell Light
- *  --------------------------*/
+
 export default function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
   const pathname = usePathname();
 
-  // restore & persist
   useEffect(() => {
     const saved =
       typeof window !== "undefined"
@@ -183,7 +179,6 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     localStorage.setItem("sidebar-open", open ? "1" : "0");
   }, [open]);
 
-  // Ctrl/⌘ + B to toggle
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
@@ -236,6 +231,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
             style={{ background: GREEN.soft, color: GREEN.base }}
           >
             Dashboard of Production Performance
+          </div>
+                    <div
+            className="hidden sm:block text-sm font-semibold px-3 py-1 rounded-lg"
+            style={{ background: GREEN.soft, color: GREEN.base }}
+          >
+            <span className="text-red-600 font-bold">PT Indonesia Koito</span>
           </div>
         </div>
 

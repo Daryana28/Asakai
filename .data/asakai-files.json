@@ -1,22 +1,13 @@
 {
   "files": [
     {
-      "id": "1762297860289_0le5qg",
+      "id": "1762381091805_mhtvby",
       "name": "Test.pdf",
-      "dept": "ASSY",
-      "uploadedAt": "2025-11-04T23:11:00.292Z",
+      "dept": "Surface Treatment",
+      "uploadedAt": "2025-11-05T22:18:11.808Z",
       "type": "pdf",
-      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762297860289_0le5qg.pdf",
-      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762297860289_0le5qg_cover.png"
-    },
-    {
-      "id": "1762296797579_zgudlb",
-      "name": "Test.pdf",
-      "dept": "INJ",
-      "uploadedAt": "2025-11-04T22:53:17.581Z",
-      "type": "pdf",
-      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762296797579_zgudlb.pdf",
-      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762296797579_zgudlb_cover.png"
+      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762381091805_mhtvby.pdf",
+      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762381091805_mhtvby_cover.png"
     }
   ]
 }

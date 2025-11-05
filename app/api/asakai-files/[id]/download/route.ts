@@ -17,7 +17,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const data = await fs.readFile(filePath);
     const inline = req.nextUrl.searchParams.get("inline") === "1";
 
-    // coba tebak content-type sederhana dari ekstensi
     const ext = (item.file.split(".").pop() || "").toLowerCase();
     const mime =
       ext === "pdf"

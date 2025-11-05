@@ -16,17 +16,17 @@ type AsakaiFile = {
   rows: IssueRow[];
 };
 
-let STORE: AsakaiFile[] = []; // in-memory
+let STORE: AsakaiFile[] = []; 
 
 export async function GET() {
-  // list saja (tanpa isi besar)
+  
   return NextResponse.json(
     STORE.map(({ id, name, uploadedAt }) => ({ id, name, uploadedAt }))
   );
 }
 
 export async function POST(req: Request) {
-  // terima { name, rows }
+  
   const body = await req.json();
   const f: AsakaiFile = {
     id: Date.now().toString(),
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  // minta isi file tertentu { id }
+  
   const { id } = await req.json();
   const f = STORE.find((x) => x.id === String(id));
   if (!f) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
