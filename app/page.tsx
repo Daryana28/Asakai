@@ -257,43 +257,43 @@ export default function Home() {
 
   return (
     <div className="p-6 space-y-8 bg-slate-50 min-h-screen text-slate-900">
-      {/* Status live
-      <div className="flex items-center gap-2 text-sm">
-        <span
-          className={[
-            "inline-flex items-center gap-2 px-2 py-1 rounded-md border",
-            isLiveFresh
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-slate-200 bg-white text-slate-600",
-          ].join(" ")}
-          title={
-            isLiveFresh ? "Realtime (SSE/polling)" : "Fallback simulator aktif"
-          }
-        >
-          <span
-            className={[
-              "h-2 w-2 rounded-full",
-              isLiveFresh ? "bg-emerald-500" : "bg-slate-400",
-            ].join(" ")}
-          />
-          {isLiveFresh ? "LIVE" : "OFFLINE"}
-        </span>
-        {live?.ts && (
-          <span className="text-xs text-slate-500">
-            Updated: {new Date(live.ts).toLocaleTimeString("id-ID")}
-          </span>
-        )}
-      </div> */}
-
       {/* Card produksi */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {CARDS.map((c) => (
           <div
             key={c.key}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center"
+            onClick={() => {
+              if (c.key === "Injection") window.location.href = "/injection";
+            }}
+            className="cursor-pointer hover:shadow-md transition bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center"
           >
             <h2 className="text-2xl font-semibold mb-4">{c.key}</h2>
-            <ProjectArcSemi value={c.efficiency} size={220} thickness={45} />
+            <ProjectArcSemi
+              value={c.efficiency}
+              size={220}
+              thickness={45}
+              colorDone={
+                c.key === "Injection"
+                  ? "#22A06B" // Hijau
+                  : c.key === "Surface Treatment"
+                  ? "#EAB308" // Kuning (yellow-500)
+                  : "#3B82F6" // Biru (blue-500)
+              }
+              colorProgress={
+                c.key === "Injection"
+                  ? "#0E5F3D"
+                  : c.key === "Surface Treatment"
+                  ? "#CA8A04" // yellow-600
+                  : "#1D4ED8" // blue-700
+              }
+              stripeColor={
+                c.key === "Injection"
+                  ? "#5A7C6B"
+                  : c.key === "Surface Treatment"
+                  ? "#FACC15" // yellow-400
+                  : "#60A5FA" // blue-400
+              }
+            />
             <div className="w-full my-4 border-t border-slate-200" />
             <div className="text-sm space-y-3 mb-2 text-slate-700 w-full">
               <div>
@@ -326,9 +326,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {docs.files.length === 0 ? (
-            <div className="text-sm text-slate-500">
-              Belum ada issue.
-            </div>
+            <div className="text-sm text-slate-500">Belum ada issue.</div>
           ) : (
             docs.files.map((f) => (
               <div

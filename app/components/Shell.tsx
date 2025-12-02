@@ -15,20 +15,20 @@ const GREEN = {
 
 const MENU = [
   { href: "/", label: "Dashboard", icon: "grid" as const, badge: "" },
-  { href: "/henkaten", label: "Henkaten", icon: "docs" as const, badge: "" },
+  // { href: "/henkaten", label: "Henkaten", icon: "docs" as const, badge: "" },
   {
     href: "/input",
     label: "Input User",
     icon: "calendar" as const,
     badge: "",
   },
-  { href: "/kpi", label: "KPI Delivey", icon: "chart" as const, badge: "" },
+  // { href: "/kpi", label: "KPI Delivey", icon: "chart" as const, badge: "" },
 ];
 
 const GENERAL = [
-  { href: "/settings", label: "Settings", icon: "gear" as const },
-  { href: "/help", label: "help", icon: "help" as const },
-  { href: "/logout", label: "logout", icon: "logout" as const },
+  // { href: "/settings", label: "Settings", icon: "gear" as const },
+  // { href: "/help", label: "Help", icon: "help" as const },
+  { href: "/logout", label: "Logout", icon: "logout" as const },
 ];
 
 /** ---------------------------

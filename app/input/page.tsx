@@ -126,13 +126,7 @@ export default function InputAsakai() {
         style={{ borderColor: GREEN.border, background: GREEN.card }}
       >
         <p className="text-sm" style={{ color: GREEN.dim }}>
-          Bisa upload: <b>Excel</b> (.xlsx/.xls), <b>PDF</b>, <b>Word</b>, dan{" "}
-          <b>Gambar</b> (.png/.jpg/.webp).
-          <br />
-          Untuk Excel, minimal kolom: <b>
-            Category
-          </b> (Safety/BNF/RIL/Delivery), <b>Title</b>, <b>Dept</b>,{" "}
-          <b>Status</b>, <b>Date</b>.
+          Silahkan pilih sesuai departement :
         </p>
 
         {/* Controls */}
@@ -382,7 +376,7 @@ export default function InputAsakai() {
         className="text-xs rounded-xl px-3 py-2 w-fit"
         style={{ background: "#F3F7F5", color: GREEN.sage, ...ringStyle }}
       >
-        Tips: .
+        Tips: Pastikan data sesuai.
       </div>
     </div>
   );

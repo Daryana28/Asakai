@@ -1,13 +1,3 @@
 {
-  "files": [
-    {
-      "id": "1762381091805_mhtvby",
-      "name": "Test.pdf",
-      "dept": "Surface Treatment",
-      "uploadedAt": "2025-11-05T22:18:11.808Z",
-      "type": "pdf",
-      "filePath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762381091805_mhtvby.pdf",
-      "coverPath": "/Users/daryana/Workspace/smartasakai/asakai/.uploads/1762381091805_mhtvby_cover.png"
-    }
-  ]
+  "files": []
 }
