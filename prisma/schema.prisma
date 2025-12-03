@@ -1,0 +1,91 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ProductionRecord {
+  id          Int           @id @default(autoincrement())
+  
+  faccd       String?       // fac_cd
+  facility    String?       // facility
+  line        String?       // line / machine
+  prodDate    DateTime?     // prod_date
+  shift       Int?          // shift
+  scanId      String?       // scan_id
+  qty         Int?          // qty (always 1 pada data kamu)
+  
+  itemCode    String?       // item_code
+  itemName    String?       // item_name
+  mold        String?       // mold
+  
+  okQty       Int?          // ok_qty
+  ngQty       Int?          // ng_qty
+  
+  cycleTime   Float?        // cycle_time
+  lossHrs     Float?        // loss_hrs
+  reason      String?       // reason
+  dept        String?       // dept = INJECTION / ST / etc.
+  
+  createdAt   DateTime      @default(now())
+
+  events      RuntimeEvent[]
+}
+
+model RuntimeEvent {
+  id           Int      @id @default(autoincrement())
+  
+  productionId Int
+  rtcd         String?
+  rtflg        String?
+  excludeSn    String?
+  rtmel        String?
+  
+  createdAt    DateTime @default(now())
+
+  production ProductionRecord @relation(fields: [productionId], references: [id])
+}
+
+model AbnormalIssue {
+  id          Int      @id @default(autoincrement())
+  model       String
+  line        String
+  plan        Int
+  actual      Int
+  achievement Int
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
+
+model Abnormal {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+
+  model       String
+  line        String
+  plan        Int
+  actual      Int
+  achievement Int
+
+  // Setelah user mengisi form
+  problem     String?
+  tempAction  String?
+  fixAction   String?
+  fourM       String?
+  rules       String?
+  repair      String?
+
+  why1        String?
+  why2        String?
+  why3        String?
+  why4        String?
+  why5        String?
+
+  imageUrl    String?
+
+  status      String   @default("PENDING")
+}

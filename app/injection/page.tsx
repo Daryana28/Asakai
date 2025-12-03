@@ -189,7 +189,10 @@ export default function InjectionGraphPage() {
   const chartRef2 = React.useRef(null);
 
   const router = useRouter();
-  const handleClickZona = (event, chartRef) => {
+  const handleClickZona = (
+    event: React.MouseEvent<HTMLCanvasElement>,
+    chartRef: any
+  ) => {
     if (!chartRef.current) return;
     const elements = getElementAtEvent(chartRef.current, event);
     if (!elements.length) return;

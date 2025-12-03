@@ -22,6 +22,12 @@ const MENU = [
     icon: "calendar" as const,
     badge: "",
   },
+  {
+    href: "/abnormal/list",
+    label: "Abnormal Issue",
+    icon: "alert" as const,
+    badge: "",
+  },
   // { href: "/kpi", label: "KPI Delivey", icon: "chart" as const, badge: "" },
 ];
 
@@ -52,6 +58,14 @@ function Icon({ name, active = false }: { name: string; active?: boolean }) {
           <rect x="13" y="3" width="8" height="8" rx="2" />
           <rect x="3" y="13" width="8" height="8" rx="2" />
           <rect x="13" y="13" width="8" height="8" rx="2" />
+        </svg>
+      );
+    case "alert":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" stroke={stroke} fill="none" strokeWidth="1.8">
+          <path d="M12 9v4" />
+          <circle cx="12" cy="17" r="1" fill={stroke} />
+          <path d="M10.29 3.86 1.82 18a1.5 1.5 0 0 0 1.29 2.25h17.78A1.5 1.5 0 0 0 22.18 18L13.71 3.86a1.5 1.5 0 0 0-2.42 0z" />
         </svg>
       );
     case "docs":
@@ -167,6 +181,7 @@ function Icon({ name, active = false }: { name: string; active?: boolean }) {
 export default function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
   const pathname = usePathname();
+  const [abnormalCount, setAbnormalCount] = useState(0);
 
   useEffect(() => {
     const saved =
@@ -188,6 +203,20 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  useEffect(() => {
+    async function loadCount() {
+      try {
+        const res = await fetch("/api/abnormal/count");
+        if (!res.ok) throw new Error("Failed to fetch abnormal count");
+        const data = await res.json();
+        setAbnormalCount(data.count ?? 0);
+      } catch (err) {
+        console.error(err);
+        setAbnormalCount(0);
+      }
+    }
+    loadCount();
   }, []);
 
   const linkClass = (href: string) => {
@@ -277,12 +306,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                   >
                     {m.label}
                   </span>
-                  {m.badge ? (
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full text-white"
-                      style={{ background: GREEN.base }}
-                    >
-                      {m.badge}
+                  {m.label === "Abnormal Issue" && abnormalCount > 0 ? (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full text-white" style={{background: GREEN.base}}>
+                      {abnormalCount}
                     </span>
                   ) : null}
                 </Link>

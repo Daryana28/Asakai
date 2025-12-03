@@ -1,6 +1,8 @@
+// app/injection/12C4/page.tsx
 "use client";
 
 import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,6 +10,7 @@ import {
   BarElement,
   Tooltip,
   Legend,
+  LegendItem,
 } from "chart.js";
 import { Bar, getElementAtEvent } from "react-chartjs-2";
 
@@ -25,7 +28,8 @@ const plan = [500, 500, 400, 300, 300];
 const actual = [400, 500, 150, 400, 50];
 
 export default function Page12C4() {
-  const chartRef = useRef(null);
+  const chartRef = useRef<any>(null);
+  const router = useRouter();
   const [hoverIndex, setHoverIndex] = React.useState<number | null>(null);
   const [showPlan, setShowPlan] = React.useState(true);
   const [showActual, setShowActual] = React.useState(true);
@@ -74,7 +78,7 @@ export default function Page12C4() {
 
   const data = { labels, datasets };
 
-  const options = {
+  const options: import("chart.js").ChartOptions<"bar"> = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
@@ -87,7 +91,7 @@ export default function Page12C4() {
         labels: {
           font: { size: 14 },
         },
-        onClick: (_, legendItem) => {
+        onClick: (_: any, legendItem: LegendItem) => {
           if (legendItem.text === "Plan") setShowPlan(!showPlan);
           if (legendItem.text === "Actual") setShowActual(!showActual);
         },
@@ -115,13 +119,53 @@ export default function Page12C4() {
     },
   };
 
-  const handleHover = (event) => {
+  const handleHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!chartRef.current) {
+      setHoverIndex(null);
+      return;
+    }
     const elements = getElementAtEvent(chartRef.current, event);
     if (!elements.length) {
       setHoverIndex(null);
       return;
     }
     setHoverIndex(elements[0].index);
+  };
+
+  const handleClick = async (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!chartRef.current) return;
+
+    const elements = getElementAtEvent(chartRef.current, event);
+    if (!elements.length) return;
+
+    const index = elements[0].index;
+    const label = labels[index];
+    const planVal = plan[index];
+    const actualVal = actual[index];
+    const achievement = Math.round((actualVal / planVal) * 100);
+
+    // Trigger abnormal only when ACTUAL < PLAN
+    if (actualVal < planVal) {
+      try {
+        await fetch("/api/abnormal/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: label,
+            line: "12C4",
+            plan: planVal,
+            actual: actualVal,
+            achievement,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to create abnormal issue:", err);
+      }
+
+      router.push(
+        `/abnormal/report?model=${encodeURIComponent(label)}&plan=${planVal}&actual=${actualVal}&achievement=${achievement}`
+      );
+    }
   };
 
   return (
@@ -139,6 +183,7 @@ export default function Page12C4() {
             options={options}
             onMouseMove={handleHover}
             onMouseLeave={() => setHoverIndex(null)}
+            onClick={handleClick}
           />
         </div>
 
